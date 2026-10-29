@@ -2,6 +2,14 @@
 
 Upload an email and get a verdict (**Phishing**, **Suspicious** or **Likely safe**) with the specific red flags behind it. The analyzer combines fast rule-based checks with an AI second opinion, and it is built to resist **prompt injection**: emails that try to talk the AI into calling them safe.
 
+**Live app:** https://phishing-analyzer-kx.streamlit.app
+
+### 60-second demo
+
+[![Demo: a fake PayPal email flagged as Phishing (99%) and a real SeaWorld email cleared as Likely safe (93%). Click to watch.](docs/demo-preview.gif)](docs/demo.mp4)
+
+*Sped-up preview. [Watch the full demo](docs/demo.mp4). A fake PayPal email is called **Phishing (99%)**, with its hidden "ignore previous instructions" line reported as evidence, and a real SeaWorld marketing email is cleared as **Likely safe (93%)**.*
+
 ![Analyzer showing a fake PayPal phishing email: 100/100 risk score and 9 red flags](docs/app-demo.png)
 
 ## Results
@@ -76,7 +84,7 @@ I deliberately **did not add rules to catch these two**. Tuning a detector to th
 
 ## Safety and privacy
 
-- Links are shown as plain text and are never opened or made clickable.
+- Links are shown as plain text and are never opened or made clickable. URLs and email addresses in the AI's explanation, the subject line and the sender name are *defanged* (shown as code text), so attacker-controlled text can't turn into a live link.
 - The public app allows 10 AI checks per visitor session and 2 MB uploads, and the API account has a spending cap.
 - Uploaded emails are sent to Anthropic's API for the AI check. Don't upload anything confidential.
 

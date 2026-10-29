@@ -1,5 +1,6 @@
 """Phishing Email Analyzer: upload an email, get red flags and an AI verdict."""
 import os
+import re
 
 import pandas as pd
 import streamlit as st
@@ -19,6 +20,14 @@ except Exception:
 MAX_AI_CHECKS = 10        # per visitor session, so a public app can't drain API credit
 MAX_FILE_MB = 2
 COLORS = {"Phishing": "red", "Suspicious": "orange", "Likely safe": "green"}
+
+# URLs and email addresses inside AI text would become clickable links in Markdown.
+# Wrapping them in backticks shows them as plain code text instead.
+LINKY_RE = re.compile(r"(https?://[^\s)\]]+|www\.[^\s)\]]+|[\w.+-]+@[\w-]+\.[\w.-]+)")
+
+
+def defang(text):
+    return LINKY_RE.sub(lambda m: f"`{m.group(0)}`", str(text).replace("`", "'"))
 
 st.title("🎣 Phishing Email Analyzer")
 st.caption("Rule-based red flags plus an AI second opinion, with defenses against prompt injection. "
@@ -63,9 +72,9 @@ c3.metric("Links found", len(info["links"]))
 c4.metric("SPF / DKIM / DMARC", f"{info['spf']} / {info['dkim']} / {info['dmarc']}")
 
 # Backticks keep addresses as plain text, so nothing from the email becomes clickable
-st.markdown(f"**From:** {info['from_name']} `{info['from_address']}`  \n"
+st.markdown(f"**From:** {defang(info['from_name'])} `{info['from_address']}`  \n"
             f"**Reply-To:** `{info['reply_to'] or '(none)'}`  \n"
-            f"**Subject:** {info['subject']}")
+            f"**Subject:** {defang(info['subject'])}")
 
 # ---------- AI verdict ----------
 st.divider()
@@ -78,9 +87,9 @@ if "ai" in st.session_state:
     if ai.get("overridden"):
         st.warning("The AI said Likely safe, but the rule checks found strong red flags, "
                    "so the verdict was raised to Suspicious.")
-    st.write(ai["summary"])
+    st.markdown(defang(ai["summary"]))
     for reason in ai["reasons"]:
-        st.markdown(f"- {reason}")
+        st.markdown(f"- {defang(reason)}")
 elif used >= MAX_AI_CHECKS:
     st.info(f"You've used all {MAX_AI_CHECKS} AI checks for this session. The rule checks below still work.")
 elif st.button("Get AI verdict", type="primary"):
