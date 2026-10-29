@@ -1,0 +1,7 @@
+.venv/
+.env
+.idea/
+samples/
+__pycache__/
+eval/
+results.csv
